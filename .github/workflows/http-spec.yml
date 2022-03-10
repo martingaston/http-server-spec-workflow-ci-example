@@ -1,0 +1,22 @@
+name: HTTP Server Spec
+
+on: [push, pull_request]
+
+jobs:
+  run-acceptance-spec:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout spec repo
+        uses: actions/checkout@v3
+        with:
+          repository: 8thlight/http_server_spec
+          token: ${{ secrets.READ_PRIVATE_REPO }}
+          path: http_server_spec
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true # runs 'bundle install' and caches installed gems automatically
+          working-directory: ./http_server_spec
+      - name: Run Acceptance Test Suite
+        run: bundle exec rake test
+        working-directory: http_server_spec
