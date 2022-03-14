@@ -2,21 +2,45 @@ name: HTTP Server Spec
 
 on: [push, pull_request]
 
+# jobs of a series of steps, with each step running in order.
+# later steps can access data created by earlier steps.
 jobs:
   run-acceptance-spec:
     runs-on: ubuntu-20.04
     steps:
+      - name: Checkout server repo
+        uses: actions/checkout@v3
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+          installer-parallel: true
+      - name: Install Python dependencies
+        run: poetry install
+      - name: Run Flask server
+        run: poetry run flask run &
+      # this checks out the http_server_spec repo from 8thlight
       - name: Checkout spec repo
         uses: actions/checkout@v3
         with:
           repository: 8thlight/http_server_spec
-          token: ${{ secrets.READ_PRIVATE_REPO }}
-          path: http_server_spec
+          ref: f6905c862f9287ea920d4f8b7f00413f4341273b # pin to a specific commit to stop potential future spec changes from ruining your runs
+          # 8thlight/http_server_spec is private so you'll need a token for the job runner to be able to access it
+          # lookup GitHub Personal Access Tokens for more. You'll need one with full repo acccess. This should be stored in CI as a secret.
+          token: ${{ secrets.READ_PRIVATE_REPO }} 
+          path: http_server_spec # this is the directory in your job filesystem the repo we be checked out into. 
+      # the http sever spec uses ruby, so we'll need to have ruby enabled in our environment
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
           bundler-cache: true # runs 'bundle install' and caches installed gems automatically
-          working-directory: ./http_server_spec
+          working-directory: ./http_server_spec # we tell the action that our suite was checked out here
+      # with the repo cloned and our ruby environment setup, we can run the test suite
       - name: Run Acceptance Test Suite
         run: bundle exec rake test
         working-directory: http_server_spec

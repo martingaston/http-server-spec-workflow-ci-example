@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "http-server-spec-workflow-ci-example"
+version = "0.1.0"
+description = ""
+authors = ["Martin Gaston <35241716+martingaston@users.noreply.github.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+Flask = "^2.0.3"
+
+[tool.poetry.dev-dependencies]
+black = "^22.1.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
